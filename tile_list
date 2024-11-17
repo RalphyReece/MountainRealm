@@ -1,0 +1,35 @@
+0 - formless
+1 - air
+2 - grass
+3 - 
+4 - grass2
+5 - grass3
+6 - grass slope down
+7 - grass slope up
+
+
+
+-11 - slate
+-12 - tree
+
+
+
+ENTITY LIST
+
+1 - dwarf
+
+
+PROFESSION LIST
+
+1 - woodcutter
+
+
+MENU LIST
+
+0 - main menu
+1 - designation
+2 - digging
+
+ITEM LIST
+
+1 - copper pickaxe
