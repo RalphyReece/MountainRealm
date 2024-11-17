@@ -524,6 +524,9 @@ int* getAllTaskValues(const PersonList *list, size_t *count) {
 int getOneOffsetValue(const PersonList *list, size_t index) {
     return list->persons[index].offset; // Return the array of cx values
 }
+int* getInventory(const PersonList *list, size_t index) {
+    return list->persons[index].inventory;
+}
 typedef struct {
     int x, y, z;
 } Point;
@@ -1004,6 +1007,8 @@ int main(int argc, char *argv[]) {
                 switch (event.key.keysym.sym) {
                     case SDLK_ESCAPE:
                         if (menu != 0) {
+                        	dclicks=0;
+                        	cursor=0;
                             menu = 0;
                             printf("menu - 0\n");
                             
@@ -1085,7 +1090,7 @@ int main(int argc, char *argv[]) {
                         	
                         break;
                     case SDLK_PERIOD:
-                        if (menu == 0) {
+                        if (menu <=1) {
                             if (SDL_GetModState() & KMOD_SHIFT) {
                                 if(z_level<Z_SIZE) {
                                     z_level++;
@@ -1095,7 +1100,7 @@ int main(int argc, char *argv[]) {
                         } 
                         break;
                     case SDLK_COMMA:
-                        if (menu == 0) {
+                        if (menu <= 1) {
                             if (SDL_GetModState() & KMOD_SHIFT) {
                                 if(z_level>0) {
                                     z_level--;
@@ -1133,7 +1138,25 @@ int main(int argc, char *argv[]) {
                     		sdx=cursorx-overx;
                     		sdy=cursory-overy;
                     		sdz=z_level;
-                    		printf("%d\n",sdx);
+                    		
+                    	} else if (menu==1 && dclicks==1) {
+                    		dclicks=0;
+                    		edx=cursorx-overx;
+                    		edy=cursory-overy;
+                    		edz=z_level;
+                    		if (edx >= sdx && edy >= sdy && edz >= sdz) {
+                    			for (int i=sdz; i<=edz; i++) {
+                    				if (i % 2 == 0) {
+                    					for (int j=sdx; j <= edx; j++) {
+                    						for (int k=sdy; k <= edy; k++) {
+                    							if (array[j][k][i] < 0 && array[j][k][i] != -12) {
+                    								tasks[j][k][i]=designation;
+                    							}
+                    						}
+                    					}
+                    				}
+                    			}
+                    		}
                     	}
                     	
                     
@@ -1160,9 +1183,12 @@ int main(int argc, char *argv[]) {
             int cr = 0;
             int cg = 0;
             int cb = 0;
-
-            
-            if (array[i+overx][j+overy][z_level] == 1) {
+            if (t%150 < 75 && tasks[i+overx][j+overy][z_level] > 0) {
+            	characterIndex = 219; 
+                cr = 100;
+                cg = 100;
+                cb = 0;
+            } else if (array[i+overx][j+overy][z_level] == 1) {
                 characterIndex = 249; 
                 cr = 100;
                 cg = 100;
@@ -1292,6 +1318,20 @@ int main(int argc, char *argv[]) {
 		}
 	} else if (overx == 0 && cursorx <= -1) {
 		cursorx++;
+	} else if (cursory > scy-5 && overy < Y_SIZE-30) {
+		for (int i=0; i < 5; i++) {
+			cursory--;
+			overy++;
+		}
+	} else if (overy == Y_SIZE-30 && cursory >scy-1) {
+		cursory--;
+	} else if (cursory < 5 && overy > 0) {
+		for (int i=0; i < 5; i++) {
+			cursory++;
+			overy--;
+		}
+	} else if (overy == 0 && cursory <= -1) {
+		cursory++;
 	}
 
 
@@ -1375,6 +1415,8 @@ int main(int argc, char *argv[]) {
             PrintLine(renderer, spriteSheet,strTile, 90, 2, 400, 570, 200, 200, 200);
         }
     }
+    
+    
     
     
 
