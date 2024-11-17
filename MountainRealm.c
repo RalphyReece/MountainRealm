@@ -689,11 +689,19 @@ void menu0print(SDL_Renderer *renderer, SDL_Texture *spriteSheet) {
     PrintLine(renderer, spriteSheet, "d-designation", 13, 2, 500, 30, 200, 200, 200);
     PrintLine(renderer, spriteSheet, "Space-Pause Game", 16, 2, 500, 64, 200, 200, 200);
 }
-void menu1print(SDL_Renderer *renderer, SDL_Texture *spriteSheet) {
+void menu1print(SDL_Renderer *renderer, SDL_Texture *spriteSheet,int des) {
     char test[20] = "Designation Menu";
     PrintLine(renderer, spriteSheet, test, 9, 2, 500, 0, 200, 200, 200);//char-len-scale-startx-starty-r-g-b
-    PrintLine(renderer, spriteSheet, "d-dig", 13, 2, 500, 30, 200, 200, 200);
-    PrintLine(renderer, spriteSheet, "t-trees", 16, 2, 500, 64, 200, 200, 200);
+    if (des == 1){
+    	PrintLine(renderer, spriteSheet, "d-dig", 13, 2, 500, 30, 0, 200, 200);
+    } else {
+    	PrintLine(renderer, spriteSheet, "d-dig", 13, 2, 500, 30, 200, 200, 200);
+    }
+    if (des==2){
+    	PrintLine(renderer, spriteSheet, "t-trees", 13, 2, 500, 64, 0, 200, 200);
+    } else {
+    	PrintLine(renderer, spriteSheet, "t-trees", 16, 2, 500, 64, 200, 200, 200);
+    }
 }
 void menu2print(SDL_Renderer *renderer, SDL_Texture *spriteSheet) {
     char test[20] = "Designation Menu";
@@ -709,6 +717,7 @@ int main(int argc, char *argv[]) {
     int edx;
     int edy;
     int edz;
+    int dclicks=0;
     int numTile=0;
     char strTile[30] = "NO DATA AVAILABLE";
     int cursorx=0;
@@ -1020,10 +1029,23 @@ int main(int argc, char *argv[]) {
                             } else if(overx < 70) {
                                 overx = overx + 5;
                             } 
+                        } else if (menu == 1) {
+                            if (cursor==1) {
+                                cursorx++;
+                            
+                            } else if(overx < 70) {
+                                overx = overx + 5;
+                            } 
                         }
                         break;
                     case SDLK_DOWN:
                         if (menu == 0) {
+                            if (cursor==1) {
+                                cursory++;
+                            } else if(overy < 70) {
+                                overy = overy + 5;
+                            }
+                        } else if (menu == 1) {
                             if (cursor==1) {
                                 cursory++;
                             } else if(overy < 70) {
@@ -1038,6 +1060,12 @@ int main(int argc, char *argv[]) {
                             } else if(overx > 0) {
                                 overx = overx - 5;
                             }
+                        } else if (menu == 1) {
+                            if (cursor==1) {
+                                cursorx--;
+                            } else if(overx > 0) {
+                                overx = overx - 5;
+                            }
                         }
                         break;
                     case SDLK_UP:
@@ -1047,7 +1075,14 @@ int main(int argc, char *argv[]) {
                             } else if(overy > 0) {
                                 overy = overy - 5;
                             }
+                        } else if (menu == 1) {
+                        	if (cursor==1) {
+                                cursory--;
+                            } else if(overy > 0) {
+                                overy = overy - 5;
+                            }
                         }
+                        	
                         break;
                     case SDLK_PERIOD:
                         if (menu == 0) {
@@ -1085,13 +1120,28 @@ int main(int argc, char *argv[]) {
                         } else if (menu == 0 &&
                         cursor==1) {
                             cursor=0;
-                        } else if (menu==1) {
+                        } 
+                        break;
+                    case SDLK_t:
+                    	if (menu==1) {
                         	designation=2;
                         }
                         break;
+                    case SDLK_RETURN:
+                    	if (menu==1 && dclicks==0) {
+                    		dclicks=1;
+                    		sdx=cursorx-overx;
+                    		sdy=cursory-overy;
+                    		sdz=z_level;
+                    		printf("%d\n",sdx);
+                    	}
+                    	
+                    
                     // Add more keys as needed
+                    
                     default:
                         break;
+                
                 }
             }
         }
@@ -1228,7 +1278,21 @@ int main(int argc, char *argv[]) {
 
 
     
-
+	if (cursorx > scx-5 && overx < X_SIZE-30) {
+		for (int i=0; i < 5; i++) {
+			cursorx--;
+			overx++;
+		}
+	} else if (overx == X_SIZE-30 && cursorx >scx-1) {
+		cursorx--;
+	} else if (cursorx < 5 && overx > 0) {
+		for (int i=0; i < 5; i++) {
+			cursorx++;
+			overx--;
+		}
+	} else if (overx == 0 && cursorx <= -1) {
+		cursorx++;
+	}
 
 
     //border char 219
@@ -1286,7 +1350,7 @@ int main(int argc, char *argv[]) {
     if (menu == 0) {
         menu0print(renderer, spriteSheet);
     } else if (menu == 1) {
-    	menu1print(renderer, spriteSheet);
+    	menu1print(renderer, spriteSheet,designation);
     }
     if (cursor==1) {
         
