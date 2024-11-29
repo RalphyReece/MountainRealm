@@ -1,7 +1,7 @@
 0 - formless
 1 - air
 2 - grass
-3 - 
+3 - grass4
 4 - grass2
 5 - grass3
 6 - grass slope down
@@ -21,7 +21,7 @@ ENTITY LIST
 
 PROFESSION LIST
 
-1 - woodcutter
+1 - miner
 
 
 MENU LIST
@@ -33,3 +33,7 @@ MENU LIST
 ITEM LIST
 
 1 - copper pickaxe
+
+TASKS
+
+1 - mining

@@ -8,16 +8,16 @@
 #include <stdbool.h>
 #include <unistd.h>
 #define PERM_SIZE 256
-#define WINDOW_WIDTH 800
-#define WINDOW_HEIGHT 600
+#define WINDOW_WIDTH 1200
+#define WINDOW_HEIGHT 900
 #define CHAR_WIDTH 8
 #define CHAR_HEIGHT 12
 #define NUM_COLUMNS 16
 #define PERM_SIZE 256
-#define X_SIZE 100
-#define Y_SIZE 100
-#define ZW_SIZE 10
-#define Z_SIZE 20
+#define X_SIZE 200
+#define Y_SIZE 200
+#define ZW_SIZE 50
+#define Z_SIZE 100
 #define NAME_LENGTH 50
 #define MAX_PROFESSIONS 10
 #define MAX_INVENTORY 10
@@ -630,6 +630,20 @@ void UpdateDwarfCy(PersonList *list, size_t index, int cy) {
     }
     list->persons[index].cy = cy;
 }
+void UpdateDwarfTask(PersonList *list, size_t index, int task) {
+    if (index >= list->size) {
+        printf("Index out of bounds. Unable to update person.\n");
+        return; // Handle invalid index
+    }
+    list->persons[index].task = task;
+}
+void UpdateDwarfFree(PersonList *list, size_t index, int free) {
+    if (index >= list->size) {
+        printf("Index out of bounds. Unable to update person.\n");
+        return; // Handle invalid index
+    }
+    list->persons[index].free = free;
+}
 void UpdateDwarfCz(PersonList *list, size_t index, int cz) {
     if (index >= list->size) {
         printf("Index out of bounds. Unable to update person.\n");
@@ -686,32 +700,35 @@ Point start = {0, 0, 0}; // Starting point
     
 
 */
-void menu0print(SDL_Renderer *renderer, SDL_Texture *spriteSheet) {
+void menu0print(SDL_Renderer *renderer, SDL_Texture *spriteSheet,int scx, int scy) {
     char test[9] = "Main menu";
-    PrintLine(renderer, spriteSheet, test, 9, 2, 500, 0, 200, 200, 200);//char-len-scale-startx-starty-r-g-b
-    PrintLine(renderer, spriteSheet, "d-designation", 13, 2, 500, 30, 200, 200, 200);
-    PrintLine(renderer, spriteSheet, "Space-Pause Game", 16, 2, 500, 64, 200, 200, 200);
+    PrintLine(renderer, spriteSheet, test, 9, 2, 16*scx+16, 0, 200, 200, 200);//char-len-scale-startx-starty-r-g-b
+    PrintLine(renderer, spriteSheet, "d-designation", 13, 2, 16*scx+16, 30, 200, 200, 200);
+    PrintLine(renderer, spriteSheet, "Space-Pause Game", 16, 2, 16*scx+16, 64, 200, 200, 200);
 }
-void menu1print(SDL_Renderer *renderer, SDL_Texture *spriteSheet,int des) {
+void menu1print(SDL_Renderer *renderer, SDL_Texture *spriteSheet,int des, int scx, int scy) {
     char test[20] = "Designation Menu";
-    PrintLine(renderer, spriteSheet, test, 9, 2, 500, 0, 200, 200, 200);//char-len-scale-startx-starty-r-g-b
+    PrintLine(renderer, spriteSheet, test, 9, 2, 16*scx+16, 0, 200, 200, 200);//char-len-scale-startx-starty-r-g-b
     if (des == 1){
-    	PrintLine(renderer, spriteSheet, "d-dig", 13, 2, 500, 30, 0, 200, 200);
+    	PrintLine(renderer, spriteSheet, "d-dig", 13, 2, 16*scx+16, 30, 0, 200, 200);
     } else {
-    	PrintLine(renderer, spriteSheet, "d-dig", 13, 2, 500, 30, 200, 200, 200);
+    	PrintLine(renderer, spriteSheet, "d-dig", 13, 2, 16*scx+16, 30, 200, 200, 200);
     }
     if (des==2){
-    	PrintLine(renderer, spriteSheet, "t-trees", 13, 2, 500, 64, 0, 200, 200);
+    	PrintLine(renderer, spriteSheet, "t-trees", 13, 2, 16*scx+16, 64, 0, 200, 200);
     } else {
-    	PrintLine(renderer, spriteSheet, "t-trees", 16, 2, 500, 64, 200, 200, 200);
+    	PrintLine(renderer, spriteSheet, "t-trees", 16, 2, 16*scx+16, 64, 200, 200, 200);
     }
 }
-void menu2print(SDL_Renderer *renderer, SDL_Texture *spriteSheet) {
+void menu2print(SDL_Renderer *renderer, SDL_Texture *spriteSheet, int scx, int scy) {
     char test[20] = "Designation Menu";
-    PrintLine(renderer, spriteSheet, test, 9, 2, 500, 0, 200, 200, 200);//char-len-scale-startx-starty-r-g-b
-    PrintLine(renderer, spriteSheet, "d-dig", 13, 2, 500, 30, 200, 200, 200);
-    PrintLine(renderer, spriteSheet, "t-trees", 16, 2, 500, 64, 200, 200, 200);
+    PrintLine(renderer, spriteSheet, test, 9, 2, 16*scx+16, 0, 200, 200, 200);//char-len-scale-startx-starty-r-g-b
+    PrintLine(renderer, spriteSheet, "d-dig", 13, 2, 16*scx+16, 30, 200, 200, 200);
+    PrintLine(renderer, spriteSheet, "t-trees", 16, 2, 16*scx+16, 64, 200, 200, 200);
 }
+int ***tasks;
+int ***worldarray;
+int ***array;
 int main(int argc, char *argv[]) {
 	int designation = 0;
     int sdx;
@@ -731,10 +748,10 @@ int main(int argc, char *argv[]) {
     initPersonList(&list, 2); // Initial capacity of 2
 
     int professions1[] = {1, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    int inventory1[] = {10, 20, 0, 0, 0, 0, 0, 0, 0, 0};
+    int inventory1[] = {1, 20, 0, 0, 0, 0, 0, 0, 0, 0};
     int path[300] = {0};
 
-    appendPerson(&list, "Woodcutter", 30, professions1, inventory1, 1, 1, 2, 3, 4, 6, 6, 0, path, 87);
+    appendPerson(&list, "Miner", 30, professions1, inventory1, 1, 1, 2, 3, 4, 6, 6, 0, path, 87);
     
     int professions2[] = {3, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     int inventory2[] = {30, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -747,11 +764,81 @@ int main(int argc, char *argv[]) {
     float biome_scaling = .01; //.01 = classic 
     int overy = 0;
     int paused = 1;
-    int scx = 30;
-    int scy = 20;
+    int scx = 45;
+    int scy = 30;
     int t = 0;
-    int tasks[X_SIZE][Y_SIZE][Z_SIZE];
-    int worldarray[X_SIZE][Y_SIZE][ZW_SIZE];
+    // Step 1: Allocate memory for the pointer to 2D arrays
+    tasks = malloc(X_SIZE * sizeof(int**));
+    if (tasks == NULL) {
+        perror("Failed to allocate memory for tasks");
+        return 1;
+    }
+
+    // Step 2: Allocate memory for the 2D arrays
+    for (int i = 0; i < X_SIZE; i++) {
+        tasks[i] = malloc(Y_SIZE * sizeof(int*));
+        if (tasks[i] == NULL) {
+            perror("Failed to allocate memory for tasks[i]");
+            return 1;
+        }
+
+        // Step 3: Allocate memory for the 1D arrays (the actual data)
+        for (int j = 0; j < Y_SIZE; j++) {
+            tasks[i][j] = malloc(Z_SIZE * sizeof(int));
+            if (tasks[i][j] == NULL) {
+                perror("Failed to allocate memory for tasks[i][j]");
+                return 1;
+            }
+        }
+    }
+    // Step 1: Allocate memory for the pointer to 2D arrays (X_SIZE arrays)
+    worldarray = malloc(X_SIZE * sizeof(int**));
+    if (worldarray == NULL) {
+        perror("Failed to allocate memory for worldarray");
+        return 1;
+    }
+
+    // Step 2: Allocate memory for the 2D arrays (Y_SIZE arrays)
+    for (int i = 0; i < X_SIZE; i++) {
+        worldarray[i] = malloc(Y_SIZE * sizeof(int*));
+        if (worldarray[i] == NULL) {
+            perror("Failed to allocate memory for worldarray[i]");
+            return 1;
+        }
+
+        // Step 3: Allocate memory for the 1D arrays (ZW_SIZE ints)
+        for (int j = 0; j < Y_SIZE; j++) {
+            worldarray[i][j] = malloc(ZW_SIZE * sizeof(int));
+            if (worldarray[i][j] == NULL) {
+                perror("Failed to allocate memory for worldarray[i][j]");
+                return 1;
+            }
+        }
+    }
+    array = malloc(X_SIZE * sizeof(int**));
+    if (array == NULL) {
+        perror("Failed to allocate memory for array");
+        return 1;
+    }
+
+    // Step 2: Allocate memory for the 2D arrays (Y_SIZE rows)
+    for (int i = 0; i < X_SIZE; i++) {
+        array[i] = malloc(Y_SIZE * sizeof(int*));
+        if (array[i] == NULL) {
+            perror("Failed to allocate memory for array[i]");
+            return 1;
+        }
+
+        // Step 3: Allocate memory for the 1D arrays (Z_SIZE elements)
+        for (int j = 0; j < Y_SIZE; j++) {
+            array[i][j] = malloc(Z_SIZE * sizeof(int));
+            if (array[i][j] == NULL) {
+                perror("Failed to allocate memory for array[i][j]");
+                return 1;
+            }
+        }
+    }
+    
     FPSCounter fpsCounter;
     initFPSCounter(&fpsCounter); // Initialize the FPS counter
 
@@ -768,8 +855,8 @@ int main(int argc, char *argv[]) {
     //////////////////////////////////
     
     init_permutation();
-    for (int i = 0; i < 100; i++) {
-        for (int j = 0; j < 100; j++) {
+    for (int i = 0; i < X_SIZE; i++) {
+        for (int j = 0; j < Y_SIZE; j++) {
             double noise = perlin(i * .05, j * .05);
             if(noise >.7) {
                 worldarray[i][j][0] = 2; //grass
@@ -796,8 +883,8 @@ int main(int argc, char *argv[]) {
             
         }
     }
-    for (int i = 0; i < 100; i++) { 
-        for (int j = 0; j < 100; j++) {
+    for (int i = 0; i < X_SIZE; i++) { 
+        for (int j = 0; j < Y_SIZE; j++) {
             for (int k = 4; k >= 0; k--) { 
                 if(worldarray[i][j][k+1]==-12) {
                     worldarray[i][j][k]=-12;
@@ -806,8 +893,8 @@ int main(int argc, char *argv[]) {
         }
     } 
                 
-    for (int i = 0; i < 100; i++) { //Putting air in the world
-        for (int j = 0; j < 100; j++) {
+    for (int i = 0; i < X_SIZE; i++) { //Putting air in the world
+        for (int j = 0; j < Y_SIZE; j++) {
             for (int k = 0; k < 4; k++) {  
                 if(worldarray[i][j][k+1]==2) {
                     worldarray[i][j][k]=1;
@@ -824,8 +911,8 @@ int main(int argc, char *argv[]) {
     init_permutation();
 
     // Generate some noise values
-    for (int i = 0; i < 100; i++) {
-        for (int j = 0; j < 100; j++) {
+    for (int i = 0; i < X_SIZE; i++) {
+        for (int j = 0; j < Y_SIZE; j++) {
             double noise = perlin(i * .08, j * .08);
             if(noise >.63) {
                 if(worldarray[i][j][0]==2) {
@@ -842,8 +929,8 @@ int main(int argc, char *argv[]) {
     }
     init_permutation();
 
-    for (int i = 0; i < 100; i++) {
-        for (int j = 0; j < 100; j++) {
+    for (int i = 0; i < X_SIZE; i++) {
+        for (int j = 0; j < Y_SIZE; j++) {
             double noise = perlin(i * .2, j * .2);
             
             if(noise >.63) {
@@ -859,12 +946,29 @@ int main(int argc, char *argv[]) {
             }
         }
     }
+    for (int i = 0; i < X_SIZE; i++) {
+        for (int j = 0; j < Y_SIZE; j++) {
+            double noise = perlin(i * .5, j * .5);
+            
+            if(noise >.63) {
+                if(worldarray[i][j][0]==2) {
+                    worldarray[i][j][0]=3; // grass 4
+                } else if(worldarray[i][j][1]==2) {
+                    worldarray[i][j][1]=3; // grass 4
+                } else if(worldarray[i][j][2]==2) {
+                    worldarray[i][j][2]=3; // grass 4
+                } else if(worldarray[i][j][3]==2) {
+                    worldarray[i][j][3]=3; // grass 4
+                }
+            }
+        }
+    }
     
     
     
     //////////////////////////////////
     
-    int array[X_SIZE][Y_SIZE][Z_SIZE];
+    
     for (int x = 0; x < X_SIZE; x++) {
         for (int y = 0; y < Y_SIZE; y++) {
             for (int z = 0; z < Z_SIZE; z++) {
@@ -1031,14 +1135,14 @@ int main(int argc, char *argv[]) {
                             if (cursor==1) {
                                 cursorx++;
                             
-                            } else if(overx < 70) {
+                            } else if(overx < X_SIZE-30) {
                                 overx = overx + 5;
                             } 
                         } else if (menu == 1) {
                             if (cursor==1) {
                                 cursorx++;
                             
-                            } else if(overx < 70) {
+                            } else if(overx < X_SIZE-30) {
                                 overx = overx + 5;
                             } 
                         }
@@ -1047,13 +1151,13 @@ int main(int argc, char *argv[]) {
                         if (menu == 0) {
                             if (cursor==1) {
                                 cursory++;
-                            } else if(overy < 70) {
+                            } else if(overy < Y_SIZE-30) {
                                 overy = overy + 5;
                             }
                         } else if (menu == 1) {
                             if (cursor==1) {
                                 cursory++;
-                            } else if(overy < 70) {
+                            } else if(overy < Y_SIZE-30) {
                                 overy = overy + 5;
                             }
                         }
@@ -1203,15 +1307,20 @@ int main(int argc, char *argv[]) {
                 cr = 139;
                 cg = 69;
                 cb = 19;
+            } else if (array[i+overx][j+overy][z_level] == 3) {
+                characterIndex = 46; // Change this index based on your logic
+                cr = 160;
+                cg = 140;
+                cb = 10;
             } else if (array[i+overx][j+overy][z_level] == 4) {
                 characterIndex = 34; // Change this index based on your logic
                 cr = 7;
                 cg = 150;
                 cb = 10;
             } else if (array[i+overx][j+overy][z_level] == 5) {
-                characterIndex = 46; // Change this index based on your logic
-                cr = 160;
-                cg = 140;
+                characterIndex = 59; // Change this index based on your logic
+                cr = 20;
+                cg = 80;
                 cb = 10;
             } else if (array[i+overx][j+overy][z_level] == 6) {
                 characterIndex = 31; // Change this index based on your logic
@@ -1226,16 +1335,21 @@ int main(int argc, char *argv[]) {
             } else if (array[i+overx][j+overy][z_level] == -11) {
                 
                 
-                characterIndex = 0; // Change this index based on your logic
-                if(array[i+overx+1][j+overy][z_level]>-10) {
-                    characterIndex=219;   
-                } else if(array[i+overx-1][j+overy][z_level]>-10) {
-                    characterIndex=219;   
-                } else if(array[i+overx][j+overy+1][z_level]>-10) {
-                    characterIndex=219;   
-                } else if(array[i+overx][j+overy-1][z_level]>-10) {
-                    characterIndex=219;   
-                }
+                // Ensure array dimensions are valid before accessing elements
+		characterIndex = 0; 
+
+		// Check if the indices are within bounds for the array dimensions
+		if (i + overx + 1 < X_SIZE && j + overy < Y_SIZE && z_level < Z_SIZE && 		array[i + overx + 1][j + overy][z_level] > -10) {
+    			characterIndex = 219;   
+		} else if (i + overx - 1 >= 0 && j + overy < Y_SIZE && z_level < Z_SIZE && array[i + 	overx - 1][j + overy][z_level] > -10) {
+    		characterIndex = 219;   
+		} else if (i + overx < X_SIZE && j + overy + 1 < Y_SIZE && z_level < Z_SIZE && array[i + overx][j + overy + 1][z_level] > -10) {
+    		characterIndex = 219;   
+		} else if (i + overx < X_SIZE && j + overy - 1 >= 0 && z_level < Z_SIZE && array[i + overx][j + overy - 1][z_level] > -10) {
+    		characterIndex = 219;   
+		}
+
+                
                 cr = 140;
                 cg = 140;
                 cb = 120;
@@ -1350,7 +1464,7 @@ int main(int argc, char *argv[]) {
             };
 
             
-            SDL_Rect dstRect = { i * 16,490, CHAR_WIDTH * 2, CHAR_HEIGHT * 2 }; 
+            SDL_Rect dstRect = { i * 16,scy*24, CHAR_WIDTH * 2, CHAR_HEIGHT * 2 }; 
 
             // colorify it
             SDL_SetTextureColorMod(spriteSheet, cr, cg, cb); 
@@ -1372,25 +1486,25 @@ int main(int argc, char *argv[]) {
     if(paused==1) {
     
     char test[10] = "Paused";
-    PrintLine(renderer, spriteSheet, test, 0, 2, 0, 525, 0, 0, 255);//char-len-scale-startx-starty-r-g-b
+    PrintLine(renderer, spriteSheet, test, 0, 2, 0, 24*(scy)+1, 0, 0, 255);//char-len-scale-startx-starty-r-g-b
     }    
     ///////bottom menu stuff
     char result[3]; // Enough to hold up to 999 z-levels
 
     splitInteger(z_level, result);
     for (int i = 0; result[i] != '\0'; i++) {
-        Texter(renderer, spriteSheet, i*8, 590, result[i], 1,255,255,255); 
+        Texter(renderer, spriteSheet, i*8, 24*(scy+1)+12, result[i], 1,255,255,255); 
     }
     char result2[10]; // Enough to hold t for a while
     splitInteger(t, result2);
     for (int i = 0; result2[i] != '\0'; i++) {
-        Texter(renderer, spriteSheet, i*8, 580, result2[i], 1,255,255,255); 
+        Texter(renderer, spriteSheet, i*8, 24*(scy+1), result2[i], 1,255,255,255); 
     }
     updateFPS(&fpsCounter, t);
     if (menu == 0) {
-        menu0print(renderer, spriteSheet);
+        menu0print(renderer, spriteSheet, scx, scy);
     } else if (menu == 1) {
-    	menu1print(renderer, spriteSheet,designation);
+    	menu1print(renderer, spriteSheet,designation, scx, scy);
     }
     if (cursor==1) {
         
@@ -1414,6 +1528,19 @@ int main(int argc, char *argv[]) {
             }
             PrintLine(renderer, spriteSheet,strTile, 90, 2, 400, 570, 200, 200, 200);
         }
+    }
+    
+    //check if there is something to be done
+    if(t % 10 == 0) {
+    	for (int i=0; i<czCount; i++) {
+    		int* inventory = getInventory(&list, i);
+    		for (int j=0; j <10; j++) {
+    			if (inventory[j] ==1) {
+    				UpdateDwarfFree(&list, i, 0);
+    			}
+    		}
+    	
+   	 }
     }
     
     
